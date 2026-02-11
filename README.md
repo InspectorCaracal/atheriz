@@ -18,7 +18,7 @@ If you have a game object foo, with dict attribute bar, you should use it like t
 
 ```python
 with foo.lock:
-	foo.dict['key'] = bar
+	foo.bar['key'] = cool_value
 
 ```
 
