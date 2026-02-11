@@ -1,0 +1,54 @@
+from atheriz.commands.cmdset import CmdSet
+from atheriz.commands.loggedin.look import LookCommand
+from atheriz.commands.loggedin.none import NoneCommand
+from atheriz.commands.loggedin.exit import ExitCommand
+from atheriz.commands.loggedin.maze import MazeCommand
+from atheriz.commands.loggedin.save import SaveCommand
+from atheriz.commands.loggedin.spam import SpamCommand
+from atheriz.commands.loggedin.spam_reloc import SpamRelocCommand
+from atheriz.commands.loggedin.build import BuildCommand
+from atheriz.commands.loggedin.exam import ExamineCommand
+from atheriz.commands.loggedin.channel import ChannelCommand
+from atheriz.commands.loggedin.create import CreateCommand
+from atheriz.commands.loggedin.reload import ReloadCommand
+from atheriz.commands.loggedin.inventory import InventoryCommand
+from atheriz.commands.loggedin.quell import QuellCommand, UnquellCommand
+from atheriz.commands.loggedin.say import SayCommand
+from atheriz.commands.loggedin.drop import DropCommand
+from atheriz.commands.loggedin.put import PutCommand
+from atheriz.commands.loggedin.get import GetCommand
+from atheriz.commands.loggedin.shutdown import ShutdownCommand
+from atheriz.commands.unloggedin.screenreader import ScreenReaderCommand
+from atheriz.commands.loggedin.help import HelpCommand
+from atheriz.commands.loggedin.quit import QuitCommand
+from atheriz.commands.loggedin.map import MapCommand
+from atheriz.commands.loggedin.emote import EmoteCommand
+
+class LoggedinCmdSet(CmdSet):
+    def __init__(self):
+        super().__init__()
+        self.add(LookCommand())
+        self.add(NoneCommand())
+        self.add(ExitCommand())
+        self.add(MazeCommand())
+        self.add(SaveCommand())
+        self.add(SpamCommand())
+        self.add(SpamRelocCommand())
+        self.add(BuildCommand())
+        self.add(ExamineCommand())
+        self.add(ChannelCommand())
+        self.add(CreateCommand())
+        self.add(ReloadCommand())
+        self.add(InventoryCommand())
+        self.add(QuellCommand())
+        self.add(UnquellCommand())
+        self.add(SayCommand())
+        self.add(DropCommand())
+        self.add(PutCommand())
+        self.add(GetCommand())
+        self.add(ShutdownCommand())
+        self.add(ScreenReaderCommand())
+        self.add(HelpCommand())
+        self.add(QuitCommand())
+        self.add(MapCommand())
+        self.add(EmoteCommand())

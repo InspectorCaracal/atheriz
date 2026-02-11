@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atheriz"
+version = "0.1.0"
+maintainers = [{ name = "electroglyph", email = "electroglyph@gmail.com" }]
+description = "A server for text-based multiplayer games (MUDs, MU*, etc)."
+requires-python = ">=3.13"
+# readme = { file = "README.md", content-type = "text/markdown" }
+license = "BSD-3-Clause"
+keywords = [
+  "MUD",
+  "MUSH",
+  "MUX",
+  "MMO",
+  "text-only",
+  "multiplayer",
+  "online",
+  "rpg",
+  "game",
+  "engine",
+  "framework",
+  "text",
+  "adventure",
+  "telnet",
+  "websocket",
+  "blind",
+  "accessible",
+  "ascii",
+  "utf-8",
+  "terminal",
+  "online",
+  "server",
+]
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: JavaScript",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Framework :: Twisted",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Database",
+  "Topic :: Education",
+  "Topic :: Games/Entertainment :: Multi-User Dungeons (MUD)",
+  "Topic :: Games/Entertainment :: Puzzle Games",
+  "Topic :: Games/Entertainment :: Role-Playing",
+  "Topic :: Games/Entertainment :: Simulation",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Topic :: Internet :: WWW/HTTP :: WSGI :: Server",
+]
+dependencies = [
+  # "msgpack",
+  "pytest",
+  "fastapi",
+  "uvicorn",
+  "websockets",
+  "jinja2",
+  "pyatomix",
+  "psutil",
+  "dill",
+  "polyleven @ git+https://github.com/electroglyph/polyleven.git",
+  "prettytable"
+  # "inflect",
+]
+
+[tool.setuptools]
+packages = ["atheriz"]
+
+
+[project.urls]
+"Homepage" = "https://github.com/electroglyph/atheriz"
+"Github" = "https://github.com/electroglyph/atheriz"
+
+[project.scripts]
+atheriz = "atheriz.atheriz:main"
+
+
+[tool.black]
+line-length = 100
+

@@ -1,0 +1,406 @@
+"""
+Template generation for new game folders.
+
+This module provides functionality to create a new game folder with template classes
+that inherit from the base atheriz classes.
+"""
+
+import inspect
+from pathlib import Path
+from typing import Any, Callable
+
+
+class ClassInspector:
+    """Inspects a class to extract methods meant to be overridden."""
+
+    # Method name patterns that indicate override-able methods
+    OVERRIDE_PATTERNS = ("at_", "access_", "format_", "pre_")
+
+    # Specific methods to always include
+    ALWAYS_INCLUDE = ("setup_parser", "run")
+
+    def __init__(self, cls: type):
+        self.cls = cls
+
+    def get_override_methods(self) -> list[tuple[str, inspect.Signature, str | None]]:
+        """
+        Get all methods that are meant to be overridden.
+
+        Returns:
+            List of tuples: (method_name, signature, docstring)
+        """
+        methods = []
+
+        for name, method in inspect.getmembers(self.cls, predicate=inspect.isfunction):
+            # Skip private/magic methods (except those we explicitly want)
+            if name.startswith("_") and name not in self.ALWAYS_INCLUDE:
+                continue
+
+            # Check if method matches override patterns
+            should_include = any(name.startswith(p) for p in self.OVERRIDE_PATTERNS)
+            should_include = should_include or name in self.ALWAYS_INCLUDE
+
+            if should_include:
+                try:
+                    # Use eval_str=False to avoid evaluating forward reference annotations
+                    sig = inspect.signature(method, eval_str=False)
+                    doc = inspect.getdoc(method)
+                    methods.append((name, sig, doc))
+                except (ValueError, TypeError, NameError):
+                    # Some methods may not have inspectable signatures or have
+                    # forward references that can't be resolved
+                    pass
+
+        return methods
+
+
+class TemplateGenerator:
+    """Generates Python source code for template classes."""
+
+    def __init__(self, class_name: str, base_import: str, base_class: str):
+        """
+        Args:
+            class_name: Name of the new class
+            base_import: Full import path (e.g., "atheriz.objects.base_account")
+            base_class: Name of the base class to import (e.g., "Account")
+        """
+        self.class_name = class_name
+        self.base_import = base_import
+        self.base_class = base_class
+        self.methods: list[tuple[str, inspect.Signature, str | None]] = []
+
+    def add_methods(self, methods: list[tuple[str, inspect.Signature, str | None]]):
+        """Add methods to generate stubs for."""
+        self.methods = methods
+
+    def _format_signature(self, name: str, sig: inspect.Signature) -> str:
+        """Format a method signature for the template."""
+        params = []
+        for param_name, param in sig.parameters.items():
+            if param_name == "self":
+                params.append("self")
+            elif param.default is inspect.Parameter.empty:
+                if param.kind == inspect.Parameter.VAR_POSITIONAL:
+                    params.append(f"*{param_name}")
+                elif param.kind == inspect.Parameter.VAR_KEYWORD:
+                    params.append(f"**{param_name}")
+                else:
+                    params.append(param_name)
+            else:
+                # Has default value
+                default = param.default
+                if isinstance(default, str):
+                    params.append(f'{param_name}="{default}"')
+                elif default is None:
+                    params.append(f"{param_name}=None")
+                else:
+                    params.append(f"{param_name}={default!r}")
+
+        return f"def {name}({', '.join(params)}):"
+
+    def _format_super_call(self, name: str, sig: inspect.Signature) -> str:
+        """Format the super() call."""
+        args = []
+        for param_name, param in sig.parameters.items():
+            if param_name == "self":
+                continue
+            
+            if param.kind == inspect.Parameter.VAR_POSITIONAL:
+                args.append(f"*{param_name}")
+            elif param.kind == inspect.Parameter.VAR_KEYWORD:
+                args.append(f"**{param_name}")
+            elif param.kind == inspect.Parameter.KEYWORD_ONLY:
+                args.append(f"{param_name}={param_name}")
+            else:
+                args.append(param_name)
+
+        return f"return super().{name}({', '.join(args)})"
+
+    def generate(self) -> str:
+        """Generate the complete template file content."""
+        lines = [
+            f"from {self.base_import} import {self.base_class} as Base{self.base_class}",
+            "",
+            "",
+            f"class {self.class_name}(Base{self.base_class}):",
+            f'    """Custom {self.class_name} class. Override methods below to customize behavior."""',
+        ]
+
+        if not self.methods:
+            lines.append("    pass")
+        else:
+            for name, sig, doc in self.methods:
+                lines.append("")
+                lines.append(f"    {self._format_signature(name, sig)}")
+                if doc:
+                    # Use first line of docstring only
+                    first_line = doc.split("\n")[0].strip()
+                    if first_line:
+                        lines.append(f'        """{first_line}"""')
+                lines.append(f"        {self._format_super_call(name, sig)}")
+
+        lines.append("")
+        return "\n".join(lines)
+
+
+def generate_settings_template() -> str:
+    """Generate the settings.py template."""
+    return '''# Import all settings from the base game
+from atheriz.settings import *
+
+# Custom settings - add or override below
+# Example:
+# SERVERNAME = "My Custom Game"
+# WEBSERVER_PORT = 8001
+
+# Class injection configuration
+# (local_module, class_name, target_import_path)
+# Class injection configuration
+# (local_module, class_name, target_import_path)
+CLASS_INJECTIONS = [
+    ("account", "Account", "atheriz.objects.base_account"),
+    ("object", "Object", "atheriz.objects.base_obj"),
+    ("channel", "Channel", "atheriz.objects.base_channel"),
+    ("node", "Node", "atheriz.objects.nodes"),
+    ("commands.loggedin", "LoggedinCmdSet", "atheriz.commands.loggedin.cmdset"),
+    ("commands.unloggedin", "UnloggedinCmdSet", "atheriz.commands.unloggedin.cmdset"),
+    ("inputfuncs", "InputFuncs", "atheriz.inputfuncs"),
+]
+'''
+
+
+def generate_inputfuncs_template() -> str:
+    """Generate the inputfuncs.py template."""
+    return '''from atheriz.inputfuncs import InputFuncs as BaseInputFuncs, inputfunc
+
+
+class InputFuncs(BaseInputFuncs):
+    """Custom InputFuncs class. Add new input handlers below."""
+
+    # Example custom handler:
+    # @inputfunc()
+    # def my_custom_handler(self, connection, args, kwargs):
+    #     """Handle 'my_custom_handler' messages from client."""
+    #     pass
+'''
+
+
+def generate_command_template() -> str:
+    """Generate the command.py template with class attributes."""
+    return '''from atheriz.commands.base_cmd import Command as BaseCommand
+
+
+class Command(BaseCommand):
+    """Custom Command class. Override methods below to customize behavior."""
+
+    key = "mycommand"
+    aliases = []
+    desc = "A custom command"
+    category = "Custom"
+
+    def setup_parser(self):
+        """Add arguments to the parser here."""
+        pass
+
+    def run(self, caller, args):
+        """Implement command logic here."""
+        pass
+'''
+
+
+def generate_loggedin_cmdset_template() -> str:
+    """Generate the commands/loggedin.py template."""
+    return '''from atheriz.commands.loggedin.cmdset import LoggedinCmdSet as BaseLoggedinCmdSet
+from .test import TestCommand
+
+
+class LoggedinCmdSet(BaseLoggedinCmdSet):
+    """Custom LoggedinCmdSet class. Add logged-in commands here."""
+    
+    def __init__(self):
+        super().__init__()
+        self.add(TestCommand())
+'''
+
+
+def generate_unloggedin_cmdset_template() -> str:
+    """Generate the commands/unloggedin.py template."""
+    return '''from atheriz.commands.unloggedin.cmdset import UnloggedinCmdSet as BaseUnloggedinCmdSet
+
+
+class UnloggedinCmdSet(BaseUnloggedinCmdSet):
+    """Custom UnloggedinCmdSet class. Add unlogged-in commands here."""
+    
+    def __init__(self):
+        super().__init__()
+        # self.add(MyUnloggedinCommand())
+'''
+
+
+def generate_test_command_template() -> str:
+    """Generate the commands/test.py template."""
+    return '''from atheriz.commands.base_cmd import Command
+
+
+class TestCommand(Command):
+    """
+    A simple test command to verify custom commands work.
+    """
+    key = "test"
+    desc = "A simple test command."
+    category = "Custom"
+
+    def run(self, caller, args):
+        caller.msg("test!")
+'''
+
+
+# Template configurations: (filename, base_import, base_class)
+TEMPLATE_CONFIGS = [
+    ("account.py", "atheriz.objects.base_account", "Account"),
+    ("channel.py", "atheriz.objects.base_channel", "Channel"),
+    ("object.py", "atheriz.objects.base_obj", "Object"),
+    ("node.py", "atheriz.objects.nodes", "Node"),
+]
+
+
+def create_game_folder(folder_name: str) -> None:
+    """
+    Create a new game folder with template classes and initial world setup.
+
+    Args:
+        folder_name: Name of the folder to create
+    """
+    import os
+    import getpass
+
+    folder_path = Path(folder_name)
+
+    if folder_path.exists():
+        print(f"Error: Folder '{folder_name}' already exists.")
+        return
+
+    # Get superuser credentials from env or prompt
+    username = os.environ.get("ATHERIZ_SUPERUSER_USERNAME")
+    if not username:
+        username = input("Enter superuser username: ").strip()
+        if not username:
+            print("Error: Username cannot be empty.")
+            return
+
+    password = os.environ.get("ATHERIZ_SUPERUSER_PASSWORD")
+    if not password:
+        password = getpass.getpass("Enter superuser password: ")
+        if not password:
+            print("Error: Password cannot be empty.")
+            return
+
+    print(f"Creating game folder: {folder_name}")
+    folder_path.mkdir(parents=True)
+
+    # Create __init__.py
+    init_file = folder_path / "__init__.py"
+    init_file.write_text("")
+
+    # Generate template files that need class inspection
+    for filename, base_import, base_class in TEMPLATE_CONFIGS:
+        print(f"  Creating {filename}...")
+
+        # Import the base class
+        module = __import__(base_import, fromlist=[base_class])
+        cls = getattr(module, base_class)
+
+        # Inspect and generate
+        inspector = ClassInspector(cls)
+        methods = inspector.get_override_methods()
+
+        generator = TemplateGenerator(base_class, base_import, base_class)
+        generator.add_methods(methods)
+
+        content = generator.generate()
+        (folder_path / filename).write_text(content)
+
+    # Generate special templates
+    # Create commands directory
+    print("  Creating commands directory...")
+    commands_path = folder_path / "commands"
+    commands_path.mkdir(parents=True)
+    (commands_path / "__init__.py").write_text("")
+
+    print("  Creating commands/test.py...")
+    (commands_path / "test.py").write_text(generate_test_command_template())
+
+    print("  Creating commands/loggedin.py...")
+    (commands_path / "loggedin.py").write_text(generate_loggedin_cmdset_template())
+
+    print("  Creating commands/unloggedin.py...")
+    (commands_path / "unloggedin.py").write_text(generate_unloggedin_cmdset_template())
+
+    print("  Creating inputfuncs.py...")
+    (folder_path / "inputfuncs.py").write_text(generate_inputfuncs_template())
+
+    print(f"  Creating settings.py...")
+    (folder_path / "settings.py").write_text(generate_settings_template())
+
+    # Copy initial_setup.py
+    print(f"  Copying initial_setup.py...")
+    import atheriz.initial_setup
+    initial_setup_src = Path(atheriz.initial_setup.__file__)
+    (folder_path / "initial_setup.py").write_text(initial_setup_src.read_text())
+
+    # Copy connection_screen.py
+    print(f"  Copying connection_screen.py...")
+    import atheriz.connection_screen
+    connection_screen_src = Path(atheriz.connection_screen.__file__)
+    (folder_path / "connection_screen.py").write_text(connection_screen_src.read_text())
+
+    # Copy web folder (templates + static files)
+    print(f"  Copying web folder...")
+    import shutil
+    web_src = Path(__file__).parent / "web"
+    if web_src.exists():
+        shutil.copytree(web_src, folder_path / "web")
+    else:
+        print(f"  Warning: Web folder not found at {web_src}")
+
+    # Create save directory in the game folder
+    save_path = folder_path / "save"
+    save_path.mkdir(parents=True)
+
+    # Set up initial world and superuser account
+    print("\nSetting up initial world state...")
+
+    # Set up sys.path to include the new game folder
+    import sys
+    sys.path.insert(0, str(folder_path.resolve()))
+
+    # Import settings to configure paths
+    import settings as game_settings
+    
+    # Override save path keys in the global settings to match the new game folder
+    import atheriz.settings as global_settings
+    global_settings.SAVE_PATH = str(save_path)
+    
+    secret_path = folder_path / "secret"
+    secret_path.mkdir(parents=True, exist_ok=True)
+    global_settings.SECRET_PATH = str(secret_path)
+
+    # Import and run initial_setup from the new game folder
+    try:
+        import initial_setup
+        initial_setup.do_setup(username, password)
+    except Exception as e:
+        print(f"Error during initial setup: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+     
+    print(f"\nSuccess! Game folder '{folder_name}' created with:")
+    print(f"  Template files:")
+    print(f"    - account.py, channel.py, object.py, node.py")
+    print(f"    - commands/, inputfuncs.py, settings.py")
+    print(f"    - initial_setup.py, connection_screen.py")
+    print(f"    - web/ (templates and static files)")
+    print(f"  Initial world:")
+    print(f"    - Superuser account: {username}")
+    print(f"    - Starting room at {game_settings.DEFAULT_HOME}")
