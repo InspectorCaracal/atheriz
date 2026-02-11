@@ -9,7 +9,7 @@ class EmoteCommand(Command):
     key = "emote"
     aliases = [":"]
     category = "Communication"
-    desc = "Say something."
+    desc = "Emote something."
     use_parser = True
 
     def setup_parser(self):

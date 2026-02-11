@@ -6,6 +6,22 @@ This is a very early draft and is not ready for production use.
 
 This has some code from Evennia, and is loosely based on the same ideas.
 
+# Why use this instead of Evennia?
+
+I created this to solve some of the issues I had with Evennia.
+
+Object creation and deletion is slow in Evennia, which limits ability to create lots of things on the fly.
+
+Because Evennia is single-threaded, you are limited with how much computation you can do on objects without slowing down the game.
+
+This uses flat files instead of a database, simplifying things and mitigating multithreading issues.
+
+3d room coordinates are built in, coords = ("area", x, y, z)
+
+onTick is possible for thousands of objects without slowing down the game. (will be added soon)
+
+# More info
+
 Currently only supports web clients.
 
 This is intended to be used with Python 3.14+ free-threaded.

@@ -22,6 +22,10 @@ class ExamineCommand(Command):
     desc = "Examine an object to see its attributes."
     category = "Building"
 
+    # pyrefly: ignore
+    def access(self, caller: Object) -> bool:
+        return caller.is_builder
+
     def setup_parser(self):
         self.parser.add_argument("target", nargs="?", help="Object to examine (name or #id).")
 

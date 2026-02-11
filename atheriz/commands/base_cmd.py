@@ -140,7 +140,7 @@ class Command:
         if not args_string:
             arg_list = []
         else:
-            arg_list = shlex.split(args_string)
+            arg_list = shlex.split(args_string, posix=False)
         try:
             parsed_args = self.parser.parse_args(arg_list)
         except CommandError:
