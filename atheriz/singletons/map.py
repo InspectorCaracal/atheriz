@@ -486,8 +486,8 @@ class MapHandler:
         to_coord: tuple[str, int, int, int],
         from_coord: tuple[str, int, int, int] | None = None,
     ):
-        if from_coord and from_coord[0] == to_coord[0] and from_coord[3] == to_coord[3]:
-            return
+        # if from_coord and from_coord[0] == to_coord[0] and from_coord[3] == to_coord[3]:
+        #     return
         from_map = None
         with self.lock:
             if from_coord:
