@@ -285,7 +285,7 @@ def test_mapinfo_serialization():
     map_info = MapInfo(
         name="TestMap",
         pre_grid={(0, 0): ".", (1, 0): "#", (0, 1): ".", (1, 1): "#"},
-        legend_entries={1: legend_entry},
+        legend_entries=[legend_entry],
     )
 
     # Simulate runtime state that shouldn't be serialized or should be re-initialized
@@ -307,8 +307,8 @@ def test_mapinfo_serialization():
     assert new_map_info.pre_grid == {(0, 0): ".", (1, 0): "#", (0, 1): ".", (1, 1): "#"}
 
     # Verify legend entries
-    assert 1 in new_map_info.legend_entries
-    new_entry = new_map_info.legend_entries[1]
+    assert len(new_map_info.legend_entries) == 1
+    new_entry = new_map_info.legend_entries[0]
     assert new_entry.symbol == "x"
     assert new_entry.desc == "test_legend"
     assert new_entry.coord == (0, 0)

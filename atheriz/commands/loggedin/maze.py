@@ -4,6 +4,7 @@ from atheriz.singletons.get import get_node_handler, get_map_handler
 from atheriz.singletons.map import MapInfo, LegendEntry
 from atheriz.commands.base_cmd import Command
 from atheriz.singletons.objects import get_by_type
+import atheriz.settings as settings
 from atheriz.utils import wrap_xterm256
 import time
 from typing import TYPE_CHECKING
@@ -58,9 +59,7 @@ class MazeCommand(Command):
         mi1 = MapInfo(
             "maze1",
             map1,
-            width,
-            height,
-            None,
+            {},
             [
                 LegendEntry(
                     wrap_xterm256("!", fg=9), "to maze2", (maze1_exit.coord[1], maze1_exit.coord[2])
@@ -70,9 +69,7 @@ class MazeCommand(Command):
         mi2 = MapInfo(
             "maze2",
             map2,
-            width,
-            height,
-            None,
+            {},
             [
                 LegendEntry(
                     wrap_xterm256("!", fg=9), "to maze3", (maze2_exit.coord[1], maze2_exit.coord[2])
@@ -82,9 +79,7 @@ class MazeCommand(Command):
         mi3 = MapInfo(
             "maze3",
             map3,
-            width,
-            height,
-            None,
+            {},
             [
                 LegendEntry(
                     wrap_xterm256("!", fg=9), "to maze1", (maze3_exit.coord[1], maze3_exit.coord[2])
@@ -205,7 +200,8 @@ def create_map(maze: dict, width: int, height: int, area: str):
                     break
         return (n, s, e, w)
 
-    map = [" "] * width * height
+    # map = [" "] * width * height
+    map: dict[tuple[int, int], str] = {}
     grid = NodeGrid(area, 0)
     for k, v in maze.items():
         dirs = get_dirs(k, v, maze)
@@ -219,28 +215,29 @@ def create_map(maze: dict, width: int, height: int, area: str):
         if dirs[3]:
             node.add_link(NodeLink("west", (area, k[0] - 1, k[1], 0), ["w"]))
         grid.add_node(node)
-        if dirs[0] and dirs[1] and dirs[2] and dirs[3]:
-            map[k[1] * width + k[0]] = "╬"
-        elif dirs[0] and dirs[1] and dirs[2]:
-            map[k[1] * width + k[0]] = "╠"
-        elif dirs[0] and dirs[1] and dirs[3]:
-            map[k[1] * width + k[0]] = "╣"
-        elif dirs[1] and dirs[2] and dirs[3]:
-            map[k[1] * width + k[0]] = "╦"
-        elif dirs[0] and dirs[2] and dirs[3]:
-            map[k[1] * width + k[0]] = "╩"
-        elif dirs[1] and dirs[2]:
-            map[k[1] * width + k[0]] = "╔"
-        elif dirs[1] and dirs[3]:
-            map[k[1] * width + k[0]] = "╗"
-        elif dirs[0] and dirs[2]:
-            map[k[1] * width + k[0]] = "╚"
-        elif dirs[0] and dirs[3]:
-            map[k[1] * width + k[0]] = "╝"
-        elif dirs[0] or dirs[1]:
-            map[k[1] * width + k[0]] = "║"
-        elif dirs[2] or dirs[3]:
-            map[k[1] * width + k[0]] = "═"
+        map[(k[0], k[1])] = settings.DOUBLE_WALL_PLACEHOLDER
+        # if dirs[0] and dirs[1] and dirs[2] and dirs[3]:
+        #     map[(k[0], k[1])] = "╬"
+        # elif dirs[0] and dirs[1] and dirs[2]:
+        #     map[(k[0], k[1])] = "╠"
+        # elif dirs[0] and dirs[1] and dirs[3]:
+        #     map[(k[0], k[1])] = "╣"
+        # elif dirs[1] and dirs[2] and dirs[3]:
+        #     map[(k[0], k[1])] = "╦"
+        # elif dirs[0] and dirs[2] and dirs[3]:
+        #     map[(k[0], k[1])] = "╩"
+        # elif dirs[1] and dirs[2]:
+        #     map[(k[0], k[1])] = "╔"
+        # elif dirs[1] and dirs[3]:
+        #     map[(k[0], k[1])] = "╗"
+        # elif dirs[0] and dirs[2]:
+        #     map[(k[0], k[1])] = "╚"
+        # elif dirs[0] and dirs[3]:
+        #     map[(k[0], k[1])] = "╝"
+        # elif dirs[0] or dirs[1]:
+        #     map[(k[0], k[1])] = "║"
+        # elif dirs[2] or dirs[3]:
+        #     map[(k[0], k[1])] = "═"
     return map, grid
 
 

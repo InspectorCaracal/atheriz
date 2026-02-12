@@ -56,7 +56,7 @@ class MapInfo:
         name: str = "unknown",
         pre_grid: dict[tuple[int, int], str] = {},
         post_grid: dict[tuple[int, int], str] = {},
-        legend_entries: dict[int, LegendEntry] = {},
+        legend_entries: list[LegendEntry] = [],
     ) -> None:
         self.name = name
         self.map_changed = True
@@ -64,8 +64,7 @@ class MapInfo:
         self.pre_grid: dict[tuple[int, int], str] = pre_grid if pre_grid else {}
         # post_grid is the grid after rendering the placeholders
         self.post_grid: dict[tuple[int, int], str] = post_grid if post_grid else {}
-        # self.legend_entries: list[LegendEntry] | None = legend_entries or []
-        self.legend_entries: dict[int, LegendEntry] = legend_entries if legend_entries else {}
+        self.legend_entries: list[LegendEntry] = legend_entries if legend_entries else []
         self.objects: dict[int, Object] = {}
         self.listeners: dict[int, Object] = {}
         self.lock = RLock()
@@ -77,9 +76,9 @@ class MapInfo:
         del state["listeners"]
         state["__import_path__"] = get_import_path(self)
         if self.legend_entries:
-            entries = {}
-            for k, v in self.legend_entries.items():
-                entries[k] = v.__getstate__()
+            entries = []
+            for entry in self.legend_entries:
+                entries.append(entry.__getstate__())
             state["legend_entries"] = entries
         if self.pre_grid:
             pre_grid = {}
@@ -100,14 +99,14 @@ class MapInfo:
         self.objects: dict[int, Object] = {}
         self.listeners: dict[int, Object] = {}
         if state.get("legend_entries"):
-            entries = {}
-            for k, v in state["legend_entries"].items():
+            entries = []
+            for entry_state in state["legend_entries"]:
                 entry = LegendEntry()
-                entry.__setstate__(v)
-                entries[int(k)] = entry
+                entry.__setstate__(entry_state)
+                entries.append(entry)
             self.legend_entries = entries
         else:
-            self.legend_entries = {}
+            self.legend_entries = []
         if state.get("pre_grid"):
             pre_grid = {}
             for k, v in state["pre_grid"].items():
@@ -325,7 +324,7 @@ class MapInfo:
                     for o in self.objects.values()
                     if o.id != l.id
                 ]
-                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries.values()])
+                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
                 l.at_legend_update(entries, self.name)
 
     def render(self, force=False):
@@ -341,7 +340,7 @@ class MapInfo:
                     for o in self.objects.values()
                     if o.id != l.id
                 ]
-                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries.values()])
+                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
                 grid_copy = self.post_grid.copy()
                 # grid_copy = copy.deepcopy(self.post_grid)
                 # l.at_legend_update(list(mapables.values()) + legend_entries)
@@ -356,14 +355,14 @@ class MapInfo:
                     map_str, min_x, max_y = MapInfo.render_grid(grid_copy)
                     l.at_map_update(map_str, entries, min_x, max_y, self.name)
 
-    def add_legend_entry(self, obj: Object, entry: LegendEntry):
+    def add_legend_entry(self, entry: LegendEntry):
         with self.lock:
-            self.legend_entries[obj.id] = entry
+            self.legend_entries.append(entry)
         self.render_legend()
 
-    def remove_legend_entry(self, obj: Object):
+    def remove_legend_entry(self, entry: LegendEntry):
         with self.lock:
-            self.legend_entries.pop(obj.id, None)
+            self.legend_entries.remove(entry)
         self.render_legend()
 
     def add_listener(self, listener: Object):
