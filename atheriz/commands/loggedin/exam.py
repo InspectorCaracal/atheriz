@@ -70,7 +70,7 @@ class ExamineCommand(Command):
                 else:
                     target = matches[0]
 
-        caller.msg(f"Examing {target.name} ({target.id if not target.is_node else str(target)}):")
+        caller.msg(f"Examining {target.name} ({target.id if not target.is_node else str(target)}):")
 
         ignore = ["access"]
 
@@ -87,4 +87,5 @@ class ExamineCommand(Command):
             except Exception:
                 val_str = "<unprintable>"
 
-            caller.msg(f"  {key}: {val_str}")
+            type_name = type(val).__name__
+            caller.msg(f"  {key}: {val_str} ({type_name})")
