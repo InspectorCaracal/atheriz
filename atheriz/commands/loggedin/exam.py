@@ -30,6 +30,9 @@ class ExamineCommand(Command):
         self.parser.add_argument("target", nargs="?", help="Object to examine (name or #id).")
 
     def run(self, caller: Object | Connection, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         target_str = args.target
 
         if not target_str:

@@ -17,6 +17,9 @@ class EmoteCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         loc = caller.location
         if args.text and loc:
             loc.msg_contents(f"{caller.name} {" ".join(args.text)}")

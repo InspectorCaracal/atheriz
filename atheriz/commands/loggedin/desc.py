@@ -20,6 +20,9 @@ class DescCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         if args.text:
             loc = caller.location
             if not loc:

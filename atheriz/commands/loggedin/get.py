@@ -16,6 +16,9 @@ class GetCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         loc: Node | None = caller.location
         if not loc:
             caller.msg("No.")

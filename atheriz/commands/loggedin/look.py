@@ -16,6 +16,13 @@ class LookCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            loc: Node = caller.location
+            if not loc or not loc.access(caller, "view"):
+                caller.msg("You can't tell if your eyes are open or closed.")
+                return
+            caller.msg(caller.at_look(loc))
+            return
         if args.target:
             target_name = " ".join(args.target)
             target = caller.search(target_name)

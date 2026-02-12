@@ -18,6 +18,9 @@ class PutCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         obj_name = args.object
         dest_parts = [p for p in args.destination if p.lower() not in ["in", "into"]]
         if not dest_parts:

@@ -50,6 +50,9 @@ class ChannelCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         if args.list:
             channels: list[Channel] = get_by_type("channel")
             if channels:

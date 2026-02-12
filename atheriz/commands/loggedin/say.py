@@ -17,6 +17,9 @@ class SayCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         if args.text:
             caller.at_say(" ".join(args.text))
         else:

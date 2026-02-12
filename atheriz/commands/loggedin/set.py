@@ -25,6 +25,9 @@ class SetCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         target_str = args.target
 
         if target_str == "me":
@@ -92,6 +95,9 @@ class UnsetCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         target_str = args.target
 
         if target_str == "me":

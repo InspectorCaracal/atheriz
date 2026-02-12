@@ -10,7 +10,12 @@ if TYPE_CHECKING:
 class DeleteCommand(Command):
     key = "delete"
     desc = "Delete an object permanently."
+    category = "Building"
     use_parser = True
+
+    # pyrefly: ignore
+    def access(self, caller: Object) -> bool:
+        return caller.is_builder
 
     def setup_parser(self):
         self.parser.add_argument("target", nargs='+', help="Object to delete.")
@@ -18,10 +23,10 @@ class DeleteCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
-        if not caller.is_builder:
-            caller.msg("You do not have permission to delete objects.")
+        if not args:
+            caller.msg(self.print_help())
             return
-
+        
         if not args.target:
             caller.msg("Delete what?")
             return

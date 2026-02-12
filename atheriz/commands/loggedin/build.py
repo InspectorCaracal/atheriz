@@ -66,6 +66,9 @@ class BuildCommand(Command):
 
     # pyrefly: ignore
     def run(self, caller: Object, args):
+        if not args:
+            caller.msg(self.print_help())
+            return
         nh = get_node_handler()
         mh = get_map_handler()
 
