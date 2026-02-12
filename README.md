@@ -10,9 +10,11 @@ This has some code from Evennia, and is loosely based on the same ideas.
 
 I created this to solve some of the issues I had with Evennia.
 
+This isn't meant as a knock against Evennia, btw, I love it a lot.
+
 Object creation and deletion is slow in Evennia, which limits ability to create lots of things on the fly.
 
-Because Evennia is single-threaded, you are limited with how much computation you can do on objects without slowing down the game.
+Because Evennia is single-threaded, you are limited in how much computation you can do on objects without slowing down the game.
 
 This uses flat files instead of a database, simplifying things and mitigating multithreading issues.
 
