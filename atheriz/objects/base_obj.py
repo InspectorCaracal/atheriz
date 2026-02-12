@@ -131,11 +131,12 @@ class Object:
                 obj.has_account = True
         obj.is_pc = is_pc
         obj.is_mapable = is_mapable
+        obj.is_container = is_container
         if is_pc:
             obj.is_mapable = True
+            obj.is_container = True
         obj.is_item = is_item
         obj.is_npc = is_npc
-        obj.is_container = is_container
         obj.is_tickable = is_tickable
         obj.name = name
         obj.desc = desc
