@@ -89,8 +89,9 @@ class Object:
         if settings.THREADSAFE_GETTERS_SETTERS:
             ensure_thread_safe(self)
 
-    @staticmethod
+    @classmethod
     def create(
+        cls,
         session: Session | None,
         name: str,
         desc: str = "",
@@ -118,7 +119,7 @@ class Object:
         Returns:
             Self: The created object.
         """
-        obj = Object()
+        obj = cls()
         obj.id = get_unique_id()
         obj.date_created = time.time()
         if session:

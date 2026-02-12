@@ -185,12 +185,26 @@ class InputFuncs(BaseInputFuncs):
 '''
 
 
-def generate_command_template() -> str:
-    """Generate the command.py template with class attributes."""
+def generate_command_base_template() -> str:
+    """Generate the commands/command.py template."""
     return '''from atheriz.commands.base_cmd import Command as BaseCommand
 
 
 class Command(BaseCommand):
+    """
+    Base command class for all custom commands.
+    Inherit from this class to ensure your commands have access to custom functionality.
+    """
+    pass
+'''
+
+
+def generate_command_template() -> str:
+    """Generate the command.py template with class attributes."""
+    return '''from .command import Command
+
+
+class MyCommand(Command):
     """Custom Command class. Override methods below to customize behavior."""
 
     key = "mycommand"
@@ -327,6 +341,9 @@ def create_game_folder(folder_name: str) -> None:
     commands_path.mkdir(parents=True)
     (commands_path / "__init__.py").write_text("")
 
+    print("  Creating commands/command.py...")
+    (commands_path / "command.py").write_text(generate_command_base_template())
+
     print("  Creating commands/test.py...")
     (commands_path / "test.py").write_text(generate_test_command_template())
 
@@ -346,7 +363,31 @@ def create_game_folder(folder_name: str) -> None:
     print(f"  Copying initial_setup.py...")
     import atheriz.initial_setup
     initial_setup_src = Path(atheriz.initial_setup.__file__)
-    (folder_path / "initial_setup.py").write_text(initial_setup_src.read_text())
+    content = initial_setup_src.read_text()
+    
+    # Patch imports to use local template classes
+    content = content.replace(
+        "from atheriz.objects.base_account import Account",
+        "from account import Account"
+    )
+    content = content.replace(
+        "from atheriz.objects.base_obj import Object",
+        "from object import Object"
+    )
+    content = content.replace(
+        "from atheriz.objects.base_channel import Channel",
+        "from channel import Channel"
+    )
+    content = content.replace(
+        "from atheriz.objects.nodes import Node, NodeGrid, NodeArea, NodeLink",
+        "from node import Node\nfrom atheriz.objects.nodes import NodeGrid, NodeArea, NodeLink"
+    )
+    content = content.replace(
+        "from atheriz.commands.base_cmd import Command",
+        "from commands.command import Command"
+    )
+    
+    (folder_path / "initial_setup.py").write_text(content)
 
     # Copy connection_screen.py
     print(f"  Copying connection_screen.py...")

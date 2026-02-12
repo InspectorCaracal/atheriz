@@ -33,8 +33,8 @@ class Account:
         if settings.THREADSAFE_GETTERS_SETTERS:
             ensure_thread_safe(self)
 
-    @staticmethod
-    def create(name: str, password: str) -> Account | None:
+    @classmethod
+    def create(cls, name: str, password: str) -> 'Account | None':
         """Create a new account."""
         if not name or not password:
             raise ValueError("Name and password must not be empty.")
@@ -42,7 +42,7 @@ class Account:
         if existing:
             logger.error(f"Account with this name ({name}) already exists.")
             return None
-        account = Account()
+        account = cls()
         account.id = get_unique_id()
         account.name = name
         account.password = Account.hash_password(password)

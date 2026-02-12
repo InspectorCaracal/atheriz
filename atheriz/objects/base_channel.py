@@ -94,12 +94,12 @@ class Channel:
         if settings.THREADSAFE_GETTERS_SETTERS:
             ensure_thread_safe(self)
 
-    @staticmethod
-    def create(name: str) -> Channel:
+    @classmethod
+    def create(cls, name: str) -> 'Channel':
         results = filter_by_type("channel", lambda x: x.name == name)
         if results:
             raise ValueError(f"Channel {name} already exists.")
-        c = Channel()
+        c = cls()
         c.name = name
         c.id = get_unique_id()
         add_object(c)
