@@ -282,8 +282,7 @@ window.addEventListener('load', () => {
             }
             setTimeout(() => {
                 if (rightTerminalEl.style.display !== 'none' && map_enabled) {
-                    resizeMap(pos);
-                    writeMap();
+                    composeMap();
                 }
             }, 0);
         }
@@ -1127,6 +1126,15 @@ window.addEventListener('load', () => {
 
             map = working_map;
 
+            // Calculate map dimensions
+            map_height = map.length;
+            let max_w = 0;
+            for (const line of map) {
+                const slen = line.replace(ansi_color_regex, '').length;
+                if (slen > max_w) max_w = slen;
+            }
+            map_width = max_w;
+
             // Update Legend Display
             // We need to merge custom legend items with the player entry
             let displayItems = [];
@@ -1137,7 +1145,9 @@ window.addEventListener('load', () => {
                 }
             }
 
-            const renderedLegend = window.renderLegend(current_area_name, displayItems, termRight.cols, 10, player_symbol);
+            // Adaptive legend height: try to use up to 1/3 of the terminal height
+            const adaptiveLegendHeight = Math.max(5, Math.floor(termRight.rows / 3));
+            const renderedLegend = window.renderLegend(current_area_name, displayItems, termRight.cols, adaptiveLegendHeight, player_symbol);
             legend = renderedLegend;
 
             // Trigger redraw

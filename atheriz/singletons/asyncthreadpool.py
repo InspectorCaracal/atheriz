@@ -73,11 +73,9 @@ class AsyncThreadPool:
                 break
             func, args, kwargs = task
             if hasattr(func, "__code__") and func.__code__.co_flags & 128 == 128:
-                # logger.info(f"async task: {func}")
                 asyncio.run_coroutine_threadsafe(do_async(func, *args, **kwargs), self.loop)
             else:
                 try:
-                    # logger.info(f"sync task: {func}")
                     func(*args, **kwargs)
                 except Exception as e:
                     tb = traceback.format_exc()
