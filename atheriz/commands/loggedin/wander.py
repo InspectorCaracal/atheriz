@@ -24,12 +24,14 @@ class Wanderer(Object):
             return
         self.move_to(node)
 
-
-
 class WanderCommand(Command):
     key = "wander"
     desc = "Spawn 100 NPCs to your location to wander around"
     use_parser = False
+    
+    # pyrefly: ignore
+    def access(self, caller: Object) -> bool:
+        return caller.is_builder
 
     # pyrefly: ignore
     def run(self, caller: Object, args):

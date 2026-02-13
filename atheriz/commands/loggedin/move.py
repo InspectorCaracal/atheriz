@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class MoveCommand(Command):
     key = "move"
-    desc = "Move to a coordinate. Usage: move <area> <x> <y> <z> or move (<area>,<x>,<y>,<z>)"
+    desc = "Move to a coordinate."
     category = "Building"
 
     # pyrefly: ignore
