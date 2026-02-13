@@ -32,14 +32,14 @@ class ExitCommand(Command):
         if c:
             c: Object = c[0]
         else:
-            logger.error(f"Exit command with invalid caller: {self}")
+            logger.error(f"Exit command with invalid caller. id = {self.caller_id}, destination = {self.destination}, location = {self.location}, name = {self.name}")
             return
         if not self.location or not self.destination:
-            logger.error(f"invalid Exit command: {self}")
+            logger.error(f"invalid Exit command. id = {self.caller_id}, destination = {self.destination}, location = {self.location}, name = {self.name}")
             return
         dest = nh.get_node(self.destination)
         if not dest:
-            logger.error(f"Error getting destination node for: {self}")
+            logger.error(f"Error getting destination node for: {self.destination}")
             return
         d = nh.get_doors(self.location)
         if d:
