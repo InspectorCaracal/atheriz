@@ -318,6 +318,8 @@ class MapInfo:
 
     def render_legend(self):
         with self.lock:
+            if len(self.objects) + len(self.legend_entries) > settings.MAX_OBJECTS_PER_LEGEND:
+                return
             for l in self.listeners.values():
                 entries = [
                     (o.symbol, o.name, (o.location.coord[1], o.location.coord[2]))
@@ -334,13 +336,19 @@ class MapInfo:
             self.map_changed = False
         t = time.time()
         with self.lock:
+            show_legend = True
+            if len(self.objects) + len(self.legend_entries) > settings.MAX_OBJECTS_PER_LEGEND:
+                show_legend = False
             for l in self.listeners.values():
-                entries = [
-                    (o.symbol, o.name, (o.location.coord[1], o.location.coord[2]))
-                    for o in self.objects.values()
-                    if o.id != l.id
-                ]
-                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
+                if show_legend:
+                    entries = [
+                        (o.symbol, o.name, (o.location.coord[1], o.location.coord[2]))
+                        for o in self.objects.values()
+                        if o.id != l.id
+                    ]
+                    entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
+                else:
+                    entries = []
                 grid_copy = self.post_grid.copy()
                 # grid_copy = copy.deepcopy(self.post_grid)
                 # l.at_legend_update(list(mapables.values()) + legend_entries)
