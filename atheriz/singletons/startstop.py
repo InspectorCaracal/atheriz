@@ -1,5 +1,5 @@
 from .objects import load_files
-from .get import get_async_threadpool, get_map_handler, get_node_handler, get_server_channel
+from .get import get_async_threadpool, get_map_handler, get_node_handler, get_server_channel, get_async_ticker
 from atheriz.singletons.objects import filter_by, _ALL_OBJECTS, _ALL_OBJECTS_LOCK
 from atheriz.objects.persist import save
 import atheriz.settings as settings
@@ -17,6 +17,7 @@ def do_startup():
     get_async_threadpool()
     get_map_handler()
     get_node_handler()
+    get_async_ticker()
     at_server_start()
 
 
@@ -32,6 +33,7 @@ def do_shutdown():
         save(objs)
         get_map_handler().save()
         get_node_handler().save()
+    get_async_ticker().stop()
     get_async_threadpool().stop(False)
     websocket_manager.broadcast("Server is shutting down NOW!")
     # players: list[Object] = filter_by(lambda x: x.is_pc and x.is_connected)
@@ -48,6 +50,7 @@ def do_reload():
     if channel:
         channel.msg("Server is reloading...")
     logger.info("Starting reload sequence...")
+    get_async_ticker().clear()
     at_server_reload()
     if settings.AUTOSAVE_ON_RELOAD:
         with _ALL_OBJECTS_LOCK:

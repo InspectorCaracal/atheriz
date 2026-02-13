@@ -17,7 +17,7 @@ from atheriz.utils import (
 from atheriz.objects import funcparser
 from atheriz.singletons.objects import get, filter_by
 from atheriz.objects.contents import search
-from atheriz.singletons.get import get_node_handler, get_async_threadpool
+from atheriz.singletons.get import get_node_handler, get_async_ticker
 from atheriz.commands.cmdset import CmdSet
 from atheriz.commands.loggedin.exit import ExitCommand
 from atheriz.objects.contents import filter_contents, group_by_name
@@ -96,6 +96,12 @@ class Node:
 
     def at_desc(self, *args, **kwargs):
         return self.desc
+    
+    def at_tick(self):
+        """
+        Called every tick.
+        """
+        pass
 
     @property
     def contents(self) -> list[Object]:
@@ -123,6 +129,7 @@ class Node:
     ):
         self.coord = coord
         self.desc = desc
+        self._is_tickable = False
         self.theme = theme
         self.symbol = symbol
         self.legend_desc = legend_desc
@@ -220,6 +227,23 @@ class Node:
                 self.links.append(link)
         else:
             self.links = None
+        if self._is_tickable:
+            at = get_async_ticker()
+            at.add_coro(self.at_tick, settings.TICK_SECONDS)
+        self.at_init()
+            
+    @property
+    def is_tickable(self):
+        return self._is_tickable
+
+    @is_tickable.setter
+    def is_tickable(self, value):
+        self._is_tickable = value
+        at = get_async_ticker()
+        if value:
+            at.add_coro(self.at_tick, settings.TICK_SECONDS)
+        else:
+            at.remove_coro(self.at_tick, settings.TICK_SECONDS)
 
     def set_data(self, key, value):
         """save arbitrary data for this node... make sure it can be pickled"""
@@ -268,6 +292,12 @@ class Node:
                     # result.append((o, self))
                     result.append(o)
         return result
+
+    def at_init(self):
+        """
+        Called after this object is deserialized and all attributes are set.
+        """
+        pass
 
     def add_noun(self, noun: str, desc: str):
         with self.lock:

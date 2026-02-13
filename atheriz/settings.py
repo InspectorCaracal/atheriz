@@ -4,13 +4,16 @@ SAVE_PATH = "save"
 SECRET_PATH = "secret"
 SERVERNAME = "AtheriZ"
 SERVER_HOSTNAME = "localhost"
+#TODO: reason for this setting to exist:
 WEBSOCKET_ENABLED = True
 ACCOUNT_CREATION_ENABLED = True
 WEBSERVER_ENABLED = True
 WEBSERVER_PORT = 8000
 WEBSERVER_INTERFACE = "0.0.0.0"
 THREADPOOL_LIMIT = os.cpu_count()
-MAX_CHARACTERS = 2
+MAX_CHARACTERS = 5
+TICK_SECONDS = 1.0
+#TODO: remove this or figure out something useful to do with it:
 PERMISSION_HIERARCHY = [
     0,  # Guest, note-only used if GUEST_ENABLED=True
     1,  # Player
@@ -18,7 +21,7 @@ PERMISSION_HIERARCHY = [
     3,  # Builder
     4,  # Admin
 ]
-# If True, will allow guest characters to be created (not implemented yet)
+#TODO:
 # GUEST_ENABLED = True
 FUNCPARSER_START_CHAR = "$"
 FUNCPARSER_ESCAPE_CHAR = "\\"

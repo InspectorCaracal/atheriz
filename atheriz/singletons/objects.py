@@ -9,6 +9,7 @@ from typing import Any, Callable, TYPE_CHECKING, Iterable
 
 if TYPE_CHECKING:
     from atheriz.objects.base_obj import Object
+    from atheriz.objects.nodes import Node
 
 _IGNORE_FILES = [
     "salt.txt",
@@ -28,9 +29,6 @@ TEMP_BANNED_LOCK = RLock()
 # only access via the lock
 _ALL_OBJECTS = {}
 _ALL_OBJECTS_LOCK = RLock()
-
-_TICKABLE_IDS = set()
-_TICKABLE_IDS_LOCK = RLock()
 
 # key = import path, value = set(object ids)
 # only access via the lock
@@ -73,24 +71,6 @@ def filter_by_type(import_path: str, l: Callable[[Any], bool]) -> list[Any]:
     """
     results = get_by_type(import_path)
     return [r for r in results if l(r)]
-
-
-def add_tickable(id: int) -> None:
-    """Add an object to the tickable list."""
-    with _TICKABLE_IDS_LOCK:
-        _TICKABLE_IDS.add(id)
-
-
-def remove_tickable(id: int) -> None:
-    """Remove an object from the tickable list."""
-    with _TICKABLE_IDS_LOCK:
-        _TICKABLE_IDS.discard(id)
-
-
-def get_tickables() -> list[Object]:
-    """Get a list of tickable objects."""
-    with _TICKABLE_IDS_LOCK:
-        return get(_TICKABLE_IDS)
 
 
 def get(ids: int | Iterable[int]) -> list[Any]:

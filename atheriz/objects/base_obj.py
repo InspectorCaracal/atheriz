@@ -1,13 +1,14 @@
 from atheriz.utils import compress_whitespace
 from typing import Callable
 from atheriz.utils import get_import_path
-from atheriz.singletons.objects import get, add_tickable, remove_tickable, add_object
+from atheriz.singletons.objects import get, add_object
 from atheriz.singletons.get import (
     get_node_handler,
     get_map_handler,
     get_server_channel,
     get_unique_id,
-    get_loggedin_cmdset
+    get_loggedin_cmdset,
+    get_async_ticker,
 )
 from atheriz.objects.persist import save
 from atheriz.objects.contents import search, group_by_name
@@ -70,7 +71,7 @@ class Object:
         self.is_item = False
         self.is_mapable = False
         self.is_container = False
-        self.is_tickable = False
+        self._is_tickable = False
         self.is_account = False
         self.is_channel = False
         self.is_node = False
@@ -144,6 +145,8 @@ class Object:
         obj.group_save = not is_pc
         obj.internal_cmdset = CmdSet()
         obj.external_cmdset = CmdSet()
+        if is_tickable:
+            get_async_ticker().add_coro(obj.at_tick, settings.TICK_SECONDS)
         add_object(obj)
         return obj
 
@@ -220,6 +223,23 @@ class Object:
         else:
             self.location = None
         self.home = str_to_tuple(state["home"]) if state["home"] else None
+        if self._is_tickable:
+            at = get_async_ticker()
+            at.add_coro(self.at_tick, settings.TICK_SECONDS)
+        self.at_init()
+
+    @property
+    def is_tickable(self):
+        return self._is_tickable
+
+    @is_tickable.setter
+    def is_tickable(self, value):
+        self._is_tickable = value
+        at = get_async_ticker()
+        if value:
+            at.add_coro(self.at_tick, settings.TICK_SECONDS)
+        else:
+            at.remove_coro(self.at_tick, settings.TICK_SECONDS)
 
     @property
     def seconds_played(self):
@@ -228,6 +248,18 @@ class Object:
     @seconds_played.setter
     def seconds_played(self, value):
         self._seconds_played = value
+
+    def at_init(self):
+        """
+        Called after this object is deserialized and all attributes are set.
+        """
+        pass
+
+    def at_tick(self):
+        """
+        Called every tick.
+        """
+        pass
 
     def at_disconnect(self):
         self.is_connected = False
@@ -306,13 +338,6 @@ class Object:
         """
         return grid
 
-    def at_post_map_render(self, grid: dict[tuple[int, int], str]) -> dict[tuple[int, int], str]:
-        """
-        to modify map after it's been rendered for this character
-        mapables and legend entries with coords have already been placed on this map
-        """
-        return grid
-
     def add_objects(self, objs: list[Object]):
         """
         add objects to this object's inventory
@@ -324,7 +349,7 @@ class Object:
 
     def add_object(self, obj: Object):
         """
-        add object to this node's inventory
+        add object to this object's inventory
         Args:
             obj: object to add
         """
@@ -333,7 +358,7 @@ class Object:
 
     def remove_object(self, obj):
         """
-        remove object from this node's inventory
+        remove object from this object's inventory
         Args:
             obj (Object): object to remove
         """
@@ -664,18 +689,6 @@ class Object:
             looker,
             **kwargs,
         )
-
-    def at_object_creation(self):
-        """
-        Called once, when this object is first created. This is the
-        normal hook to overload for most object types.
-
-        """
-        pass
-
-    def at_init(self):
-        """Called when the object is first deserialized."""
-        pass
 
     def at_post_puppet(self, **kwargs):
         self.is_connected = True

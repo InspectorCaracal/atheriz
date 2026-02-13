@@ -5,11 +5,12 @@ from threading import RLock
 
 if TYPE_CHECKING:
     from atheriz.commands.loggedin.cmdset import LoggedinCmdSet
-    from atheriz.singletons.asyncthreadpool import AsyncThreadPool
+    from atheriz.singletons.asyncthreadpool import AsyncThreadPool, AsyncTicker
     from atheriz.commands.unloggedin.cmdset import UnloggedinCmdSet
     from atheriz.singletons.node import NodeHandler
     from atheriz.singletons.map import MapHandler
-    from inflect import engine
+
+    # from inflect import engine
     from atheriz.objects.base_channel import Channel
 
 _ASYNC_THREAD_POOL: AsyncThreadPool | None = None
@@ -18,6 +19,7 @@ _LOGGEDIN_CMDSET: LoggedinCmdSet | None = None
 _NODE_HANDLER: NodeHandler | None = None
 _MAP_HANDLER: MapHandler | None = None
 _SERVER_CHANNEL: Channel | None = None
+_ASYNC_TICKER: AsyncTicker | None = None
 # _INFLECT_ENGINE: engine | None = None
 
 
@@ -45,6 +47,15 @@ def get_unique_id() -> int:
         global _ID
         _ID += 1
         return _ID
+
+
+def get_async_ticker() -> AsyncTicker:
+    global _ASYNC_TICKER
+    if not _ASYNC_TICKER:
+        from atheriz.singletons.asyncthreadpool import AsyncTicker
+
+        _ASYNC_TICKER = AsyncTicker()
+    return _ASYNC_TICKER
 
 
 def get_server_channel() -> Channel | None:

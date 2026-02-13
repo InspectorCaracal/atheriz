@@ -8,6 +8,7 @@ import traceback
 import queue
 from atheriz.logger import logger
 from atheriz.settings import DEBUG
+from atheriz.singletons.get import get_async_threadpool
 
 
 class AsyncThread(Thread):
@@ -112,6 +113,7 @@ class AsyncThreadPool:
 class AsyncTicker:
     class TimeSlot:
         def __init__(self, interval: float) -> None:
+            self.atp = get_async_threadpool()
             self.lock = RLock()
             self.interval = interval
             self.coros = set()
@@ -144,15 +146,14 @@ class AsyncTicker:
                 await self.task
                 with self.lock:
                     for c in self.coros:
-                        AsyncTicker.atp.add_task(c)
+                        self.atp.add_task(c)
 
         def start(self):
             if not self.running:
                 self.running = True
-                AsyncTicker.atp.add_task(self.timer)
+                self.atp.add_task(self.timer)
 
-    def __init__(self, atp: AsyncThreadPool) -> None:
-        AsyncTicker.atp = atp
+    def __init__(self) -> None:
         self.lock = RLock()
         self.slots: dict[float, AsyncTicker.TimeSlot] = {}
 
@@ -175,6 +176,14 @@ class AsyncTicker:
             slot.remove_coro(coro)
             if len(slot.coros) == 0:
                 slot.stop()
+                
+    def clear(self):
+        """
+        clear all running tickers
+        """
+        self.stop()
+        with self.lock:
+            self.slots.clear()
 
     def stop(self):
         """
