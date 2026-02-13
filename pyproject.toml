@@ -31,7 +31,6 @@ keywords = [
   "ascii",
   "utf-8",
   "terminal",
-  "online",
   "server",
 ]
 classifiers = [
@@ -69,12 +68,16 @@ dependencies = [
   "psutil",
   "dill",
   "polyleven @ git+https://github.com/electroglyph/polyleven.git",
-  "prettytable"
+  "prettytable",
   # "inflect",
 ]
 
 [tool.setuptools]
-packages = ["atheriz"]
+packages = { find = { include = ["atheriz*"] } }
+include-package-data = true
+
+[tool.setuptools.package-data]
+"atheriz" = ["web/static/**", "web/templates/**"]
 
 
 [project.urls]
@@ -87,4 +90,3 @@ atheriz = "atheriz.atheriz:main"
 
 [tool.black]
 line-length = 100
-
