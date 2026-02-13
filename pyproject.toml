@@ -73,11 +73,22 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = { find = { include = ["atheriz*"] } }
+packages = { find = { where = [
+  ".",
+], include = [
+  "atheriz*",
+], exclude = [
+  "test*",
+] } }
 include-package-data = true
 
 [tool.setuptools.package-data]
-"atheriz" = ["web/static/**", "web/templates/**"]
+"atheriz" = [
+  "web/static/**",
+  "web/templates/**",
+  "objects/verb_conjugation/*.txt",
+  "objects/verb_conjugation/LICENSE*",
+]
 
 
 [project.urls]
