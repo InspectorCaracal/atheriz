@@ -26,6 +26,7 @@ from atheriz.commands.loggedin.desc import DescCommand
 from atheriz.commands.loggedin.set import SetCommand, UnsetCommand
 from atheriz.commands.loggedin.delete import DeleteCommand
 from atheriz.commands.loggedin.wander import WanderCommand
+from atheriz.commands.loggedin.move import MoveCommand
 
 class LoggedinCmdSet(CmdSet):
     def __init__(self):
@@ -59,3 +60,4 @@ class LoggedinCmdSet(CmdSet):
         self.add(UnsetCommand())
         self.add(DeleteCommand())
         self.add(WanderCommand())
+        self.add(MoveCommand())

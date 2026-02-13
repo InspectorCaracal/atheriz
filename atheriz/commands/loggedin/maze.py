@@ -29,8 +29,8 @@ class MazeCommand(Command):
     # pyrefly: ignore
     def run(self, caller: Object, args):
         nh = get_node_handler()
-        width = 80
-        height = 30
+        width = 50
+        height = 20
         # map returned is a rectangular outline around grid, so actual map size returned is +2
         start = time.time()
         map1, grid1 = gen_map_and_grid(width, height, "maze1")
