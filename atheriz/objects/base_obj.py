@@ -295,9 +295,9 @@ class Object:
         return search(self, query)
 
     def at_legend_update(
-        self, legend: list[tuple[str, str, tuple[int, int]]], area: str = "Somewhere"
+        self, legend: list[tuple[str, str, tuple[int, int]]], show_legend: bool = True, area: str = "Somewhere"
     ):
-        self.msg(legend={"area": area, "legend": legend})
+        self.msg(legend={"area": area, "legend": legend, "show_legend": show_legend})
 
     def at_map_update(
         self,
@@ -305,6 +305,7 @@ class Object:
         legend: list[tuple[str, str, tuple[int, int]]],
         min_x: int,
         max_y: int,
+        show_legend: bool = True,
         area: str = "Somewhere",
     ):
         # Calculate player position relative to the rendered map string
@@ -327,6 +328,7 @@ class Object:
                 "min_x": min_x,
                 "max_y": max_y,
                 "area": area,
+                "show_legend": show_legend,
             }
         )
         self.last_map_time = time.time()

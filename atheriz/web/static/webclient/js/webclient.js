@@ -117,7 +117,7 @@ class HistoryManager {
 }
 
 window.addEventListener('load', () => {
-    const revision = 12;
+    const revision = 13;
     const font = new FontFaceObserver('Fira Custom');
     font.load().then(() => {
         console.log('Font loaded.');
@@ -704,6 +704,7 @@ window.addEventListener('load', () => {
         let new_map = []; // map after resize, or the original map if resize not needed
         let pos = [];  // last position sent for map
         let legend = [];  // current map legend, split into lines
+        let show_legend = true;  // whether to render the legend box
         let map_width = 0;
         let map_height = 0;
         let new_map_width = 0;
@@ -1146,9 +1147,13 @@ window.addEventListener('load', () => {
             }
 
             // Adaptive legend height: try to use up to 1/3 of the terminal height
-            const adaptiveLegendHeight = Math.max(5, Math.floor(termRight.rows / 3));
-            const renderedLegend = window.renderLegend(current_area_name, displayItems, termRight.cols, adaptiveLegendHeight, player_symbol);
-            legend = renderedLegend;
+            if (show_legend) {
+                const adaptiveLegendHeight = Math.max(5, Math.floor(termRight.rows / 3));
+                const renderedLegend = window.renderLegend(current_area_name, displayItems, termRight.cols, adaptiveLegendHeight, player_symbol);
+                legend = renderedLegend;
+            } else {
+                legend = [];
+            }
 
             // Trigger redraw
             resizeMap(pos);
@@ -1406,7 +1411,7 @@ window.addEventListener('load', () => {
                     break;
                 case 'map':
                     if (map_enabled) {
-                        // msg: ['map', [{map:..., pos:..., symbol:..., legend:..., min_x:..., max_y:...}], {}]
+                        // msg: ['map', [{map:..., pos:..., symbol:..., legend:..., min_x:..., max_y:..., show_legend:...}], {}]
                         const data = msg[1][0];
                         // Cache plain map rules
                         plain_map = data.map.split(/\r?\n/);
@@ -1418,17 +1423,23 @@ window.addEventListener('load', () => {
                             current_area_name = data.area;
                         }
                         legend_entries = data.legend; // Expecting list of tuples
+                        if (data.show_legend !== undefined) {
+                            show_legend = data.show_legend;
+                        }
 
                         composeMap();
                     }
                     break;
                 case 'legend':
                     if (map_enabled) {
-                        // msg: ['legend', [{area: "name", legend: [...]}, {}]]
+                        // msg: ['legend', [{area: "name", legend: [...], show_legend: bool}, {}]]
                         const data = msg[1][0];
                         if (data && (data.area || data.legend)) {
                             if (data.area) current_area_name = data.area;
                             legend_entries = data.legend;
+                            if (data.show_legend !== undefined) {
+                                show_legend = data.show_legend;
+                            }
                         } else {
                             // Fallback if message format differs or old format
                             legend_entries = msg[1];

@@ -340,15 +340,12 @@ class MapInfo:
             if len(self.objects) + len(self.legend_entries) > settings.MAX_OBJECTS_PER_LEGEND:
                 show_legend = False
             for l in self.listeners.values():
-                if show_legend:
-                    entries = [
-                        (o.symbol, o.name, (o.location.coord[1], o.location.coord[2]))
-                        for o in self.objects.values()
-                        if o.id != l.id
-                    ]
-                    entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
-                else:
-                    entries = []
+                entries = [
+                    (o.symbol, o.name, (o.location.coord[1], o.location.coord[2]))
+                    for o in self.objects.values()
+                    if o.id != l.id
+                ]
+                entries.extend([(e.symbol, e.desc, e.coord) for e in self.legend_entries])
                 grid_copy = self.post_grid.copy()
                 # grid_copy = copy.deepcopy(self.post_grid)
                 # l.at_legend_update(list(mapables.values()) + legend_entries)
@@ -357,11 +354,11 @@ class MapInfo:
                     if t - last_map_time > 1 / settings.MAP_FPS_LIMIT or force:
                         grid_copy = l.at_pre_map_render(grid_copy)
                         map_str, min_x, max_y = MapInfo.render_grid(grid_copy)
-                        l.at_map_update(map_str, entries, min_x, max_y, self.name)
+                        l.at_map_update(map_str, entries, min_x, max_y, show_legend, self.name)
                 else:
                     grid_copy = l.at_pre_map_render(grid_copy)
                     map_str, min_x, max_y = MapInfo.render_grid(grid_copy)
-                    l.at_map_update(map_str, entries, min_x, max_y, self.name)
+                    l.at_map_update(map_str, entries, min_x, max_y, show_legend, self.name)
 
     def add_legend_entry(self, entry: LegendEntry):
         with self.lock:
