@@ -28,6 +28,7 @@ class WanderCommand(Command):
     key = "wander"
     desc = "Spawn 100 NPCs to your location to wander around"
     use_parser = False
+    category = "Building"
     
     # pyrefly: ignore
     def access(self, caller: Object) -> bool:
